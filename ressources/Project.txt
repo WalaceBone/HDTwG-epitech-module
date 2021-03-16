@@ -1,0 +1,71 @@
+Project:
+
+The main goal of the project is to have a back-end capable to process a big amount of data in a minimum of time.
+
+You will find an archive IP-locations.rar, containing four .csv files.
+The first file 'IP-Locations.csv' contains networks associated to an UUID (1 to 1 association).
+The three other files 'Locations-*.csv' contains the UUIDs and their associated locations (continent, country, city, ...) in three languages (English, Spanish, French).
+
+You should create a back end service.
+
++-----+
+| API |
++-----+
+
+Your back end must have 2 APIs route:
+- GET - /location
+
+This API in case of success must return the location of an IP address.
+The API must have the query parameter 'ip' which is an IP address, and also accept the query parameter 'lang' which is the language that should be returned.
+If the query parameter 'lang' is present, the API must respond with the location in the chosen language.
+If the query parameter 'lang' is not present or is empty, the API must respond with the location in every language.
+The GET route should respond either the status code 200, 400, 404 or 500. 
+I will let you guess when those status needs to be responded.
+
+- PUT - /locations
+
+This API should update the dataset of networks and locations.
+There is no query parameters nor body for this API, which means that the files path (download or locally) should be stored in a configuration file.
+The API should always respond a status code that is successfull (Think about which one).
+
++------------+
+| Code logic |
++------------+
+
+Your back end service should be able on a PUT /locations to:
+1) Download OR retrieve locally (if the download fail) the archive (not the .csv files !)
+2) Unzip the archive
+3) Parse the data
+4) Store the data
+
+You will have to store the data in two different stores.
+One store that is reliable and persistent.
+One store that is fast, but not necessarily reliable or persistent.
+
+Both of those store must contains all the data.
+
+Your back end service should be able on a GET /location to:
+1) Retrieve the data from stores (From the fastest store first to the more reliable if the data hasn't been found)
+2) Add the retrieved data to the cache (If not already present)
+3) Respond to the HTTP request
+
+You should not store all the data in the cache !
+
++------+
+| Hint |
++------+
+
+You will need to have several structures implementing functions with the same signature. Think about a smart way to handle this.
+One of your store should always contains the data, the other one can be created during the service lifetime.
+The GET /location API should be as fast as possible. Think about a way to separate mandatory actions for the response from not mandatory actions.
+Take in consideration that the archive is updated with new / modified networks every month.
+When updating the dataset of networks / locations, you can either do an update regarding the .csv row that have been updated / are new between two .csv version, or do a bulk update. Choose wisely !
+
++-------+
+| Bonus |
++-------+
+
+As you read, the PUT /locations API always respond a success status code. It might be interesting to have the information if the update failed (or succeed) !
+And of course this information should come to us, we shouldn't have to search for it (forget the logs, variable in a database, ...).
+
+Good luck and have fun !
