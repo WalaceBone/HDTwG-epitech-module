@@ -26,7 +26,7 @@ I will let you guess when those status needs to be responded.
 
 This API should update the dataset of networks and locations.
 There is no query parameters nor body for this API, which means that the files path (download or locally) should be stored in a configuration file.
-The API should always respond a status code that is successfull (Think about which one).
+The API should always respond a status code that is successful (Think about which one).
 
 +------------+
 | Code logic |

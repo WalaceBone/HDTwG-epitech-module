@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  db_container:
+    volumes:
+      - "my_db:/var/lib/postgres"
+    container_name: "db_container"
+    restart: always
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_DB: "db"
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_ROOT_PASSWORD: "password"
+
+volumes:
+  my_db:
+
