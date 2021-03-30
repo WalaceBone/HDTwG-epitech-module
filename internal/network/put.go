@@ -65,12 +65,22 @@ func unzip(src string) error {
 	for _, file := range r.File {
 		if file.Name == "IP-locations/IP-locations.csv" {
 			rawBytes, _ := readAll(file)
-			lines := strings.Split(string(rawBytes), ",")
-			for i, line := range lines[2:] {
+			lines := strings.Split(string(rawBytes[13:]), ",")
+			for i, line := range lines {
 				if i < 20 {
 					fmt.Println(line)
 				} else {
-					return nil
+					break
+				}
+			}
+		} else if strings.Contains(file.Name, "IP-locations/Locations-") {
+			rawBytes, _ := readAll(file)
+			lines := strings.Split(string(rawBytes[47:]), ";")
+			for n, line := range lines {
+				if n < 20 {
+					fmt.Println(line)
+				} else {
+					break
 				}
 			}
 		}
