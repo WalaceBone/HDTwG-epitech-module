@@ -3,13 +3,12 @@ package store
 import (
 	"HDTwG/model"
 	"context"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type ClientNoSQL struct {
-	db *gorm.DB
-
+	rdb *redis.Client
 }
 
 func NewNSQLClient() *ClientNoSQL {
@@ -17,14 +16,17 @@ func NewNSQLClient() *ClientNoSQL {
 }
 
 func (c *ClientNoSQL) Init() error {
-//TODO Change later for nosql
-	dsn := "host=localhost user=user password=password dbname=db port=5432 sslmode=disable TimeZone=Europe/Paris"
-	c.db, _ = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	c.rdb = redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
 	return nil
 }
 
-func (c *ClientNoSQL) Get(ctx context.Context, opts Options) ([]model.Translation, error) {
-	return nil, nil
+func (c *ClientNoSQL) Get(ctx context.Context, opts Options) (model.Translation, error) {
+	return model.Translation{}, nil
 }
 
 func (c *ClientNoSQL) Put(ctx context.Context) error {
