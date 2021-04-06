@@ -29,12 +29,7 @@ func (c *ClientNoSQL) Get(ctx context.Context, opts Options) (model.Translation,
 	return model.Translation{}, nil
 }
 
-func (c *ClientNoSQL) Put(ctx context.Context) error {
-
-	//load conf file
-	//look for download
-	//parse
-	//update
+func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []model.Location) error {
 
 	return nil
 }

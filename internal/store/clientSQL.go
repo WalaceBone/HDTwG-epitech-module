@@ -21,7 +21,7 @@ func (c *Client) Init() error {
 	dsn := "host=localhost user=user password=password dbname=db port=5432 sslmode=disable TimeZone=Europe/Paris"
 	c.db, _ = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
-	err := c.db.AutoMigrate(&model.Translation{}, &model.Location{})
+	err := c.db.AutoMigrate(&model.Translation{}, &model.TranslationES{}, &model.TranslationEN{}, &model.Location{})
 	if err != nil {
 		return err
 	}
@@ -32,12 +32,11 @@ func (c *Client) Get(ctx context.Context, opts Options) (model.Translation, erro
 	return model.Translation{}, nil
 }
 
-func (c *Client) Put(ctx context.Context) error {
-
-	//load conf file
-	//look for download
-	//parse
-	//update
-
+func (c *Client) Put(ctx context.Context, translations Translations, locations []model.Location) error {
+	for _, ip := range locations {
+		if err := c.db.Create(&ip).Error; err != nil {
+			return err
+		}
+	}
 	return nil
 }

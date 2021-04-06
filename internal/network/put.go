@@ -1,10 +1,11 @@
 package network
 
 import (
+	"HDTwG/internal/store"
 	Stores "HDTwG/internal/store"
+	"HDTwG/model"
 	"archive/zip"
 	"context"
-	"fmt"
 	"io/ioutil"
 	"strings"
 )
@@ -13,9 +14,11 @@ type PutCmd func(ctx context.Context) error
 
 func Put(stores ...Stores.Store) PutCmd {
 	return func(ctx context.Context) error {
-		err := unzip("ressources/IP-locations.zip")
+		var translations store.Translations
+		var locations []model.Location
+		translations, locations, err := unzip("ressources/IP-locations.zip")
 		for _, store := range stores {
-			err = store.Put(ctx)
+			err = store.Put(ctx, translations, locations)
 			if err != nil {
 				//TODO error models
 				/*if err != model.ErrNotFound {
@@ -51,11 +54,37 @@ func readAll(file *zip.File) ([]byte, error) {
 	return content, err
 }
 
-func unzip(src string) error {
+// Fill database model with unziped file
+func createObject(file *zip.File) []interface{} {
+	var translation []interface{}
+	rawBytes, _ := readAll(file)
+	lines := strings.Split(string(rawBytes), "\n")
+	for _, line := range lines[1:] {
+		values := strings.Split(line, ";")
+		if len(values) > 5 {
+			translation = append(translation,
+				model.Translation{
+					UUID:       values[0],
+					Continent:  values[1],
+					Country:    values[2],
+					Region:     values[3],
+					Department: values[4],
+					City:       values[5],
+				},
+			)
+		}
+	}
+	return translation
+}
+
+func unzip(src string) (store.Translations, []model.Location, error) {
+	var translations store.Translations
+	var locations []model.Location
+
 	//Unzip ressource folder
 	r, err := zip.OpenReader(src)
 	if err != nil {
-		return err
+		return store.Translations{}, []model.Location{}, err
 	}
 
 	//Close folder at the end
@@ -65,25 +94,25 @@ func unzip(src string) error {
 	for _, file := range r.File {
 		if file.Name == "IP-locations/IP-locations.csv" {
 			rawBytes, _ := readAll(file)
-			lines := strings.Split(string(rawBytes[13:]), ",")
-			for i, line := range lines {
-				if i < 20 {
-					fmt.Println(line)
-				} else {
-					break
+			lines := strings.Split(string(rawBytes), "\n")
+			for _, line := range lines[1:] {
+				values := strings.Split(line, ",")
+				if len(values) > 1 {
+					locations = append(locations,
+						model.Location{
+							UUID:    values[1],
+							Address: values[0],
+						},
+					)
 				}
 			}
-		} else if strings.Contains(file.Name, "IP-locations/Locations-") {
-			rawBytes, _ := readAll(file)
-			lines := strings.Split(string(rawBytes[47:]), ";")
-			for n, line := range lines {
-				if n < 20 {
-					fmt.Println(line)
-				} else {
-					break
-				}
-			}
+		} else if strings.Contains(file.Name, "IP-locations/Locations-FR") {
+			translations.TranslationFR = createObject(file)
+		} else if strings.Contains(file.Name, "IP-locations/Locations-EN") {
+			translations.TranslationEN = createObject(file)
+		} else if strings.Contains(file.Name, "IP-locations/Locations-ES") {
+			translations.TranslationES = createObject(file)
 		}
 	}
-	return err
+	return translations, locations, err
 }
