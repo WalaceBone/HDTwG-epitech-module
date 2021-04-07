@@ -6,8 +6,8 @@ import (
 )
 
 type Options struct {
-	IP   string
-	Lang string
+	IP   string `json:"network"`
+	Lang string `json:"lang"`
 }
 
 type Translations struct {

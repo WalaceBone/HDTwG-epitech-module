@@ -31,6 +31,7 @@ services:
         volumes:
             - ./config/redis.conf:/redis.conf
         command: [ "redis-server", "/redis.conf" ]
+  
 
 volumes:
   my_db:

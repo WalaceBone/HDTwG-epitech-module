@@ -11,8 +11,8 @@ import (
 )
 
 func initRoute(router *gin.Engine, client *store.Client, redisClient *store.ClientNoSQL) {
-	router.GET("/location", http.GetLocation(network.Get(client, redisClient)))
-	router.PUT("/locations", http.PutLocation(network.Put(client, redisClient)))
+	router.GET("/location", http.GetLocation(network.Get(redisClient)))
+	router.PUT("/locations", http.PutLocation(network.Put(redisClient)))
 }
 
 var ctx = context.Background()
