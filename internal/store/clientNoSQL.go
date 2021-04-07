@@ -30,14 +30,19 @@ func (c *ClientNoSQL) Init() error {
 	return nil
 }
 
-func (c *ClientNoSQL) Get(ctx context.Context, opts Options) (model.Translation, error) {
+func (c *ClientNoSQL) Get(ctx context.Context, opts Options) ([]model.Translation, error) {
 
 	val, err := c.rdb.Do(ctx, "HGET", "location", opts.IP).Result()
 	if err != nil {
 		return model.Translation{}, fmt.Errorf("Not found IP")
 	}
+<<<<<<< HEAD
 	fmt.Printf("this is val = %v\n", val)
 	return model.Translation{}, nil
+=======
+	fmt.Println(val)
+	return []model.Translation{}, nil
+>>>>>>> ee7b9b7c30e9fce544c0bf0ec3307320e8359354
 }
 
 func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []model.Location) error {
@@ -45,9 +50,13 @@ func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []m
 	var err *redis.Cmd
 	wg := sync.WaitGroup{}
 	wg.Add(500)
+<<<<<<< HEAD
 	//nb_iplocations := len(ip) / 500
 	nb_translationsfr := len(translations.TranslationFR) / 500
 
+=======
+	portion := len(ip) / 500
+>>>>>>> ee7b9b7c30e9fce544c0bf0ec3307320e8359354
 	for i := 0; i < 500; i++ {
 		//go func(i int, nb_iplocations int, ip []model.Location) error {
 		//	defer wg.Done()

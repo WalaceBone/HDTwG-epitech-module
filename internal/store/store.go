@@ -11,12 +11,12 @@ type Options struct {
 }
 
 type Translations struct {
-	TranslationFR []interface{}
-	TranslationEN []interface{}
-	TranslationES []interface{}
+	TranslationFR []model.Translation
+	TranslationEN []model.Translation
+	TranslationES []model.Translation
 }
 
 type Store interface {
-	Get(ctx context.Context, opts Options) (model.Translation, error)
+	Get(ctx context.Context, opts Options) ([]model.Translation, error)
 	Put(ctx context.Context, translations Translations, ip []model.Location) error
 }

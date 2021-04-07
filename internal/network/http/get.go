@@ -20,7 +20,7 @@ func GetLocation(cmd network.GetCmd) gin.HandlerFunc {
 			return
 		}
 
-		sale, _ := cmd(c.Request.Context(), store.Options{IP: ipAddress, Lang: lang})
+		location, _ := cmd(c.Request.Context(), store.Options{IP: ipAddress, Lang: lang})
 		//TODO
 		/*if err != nil {
 			switch err {
@@ -32,6 +32,6 @@ func GetLocation(cmd network.GetCmd) gin.HandlerFunc {
 				return
 			}
 		}*/
-		c.JSON(http.StatusOK, sale)
+		c.JSON(http.StatusOK, location)
 	}
 }
