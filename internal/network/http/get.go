@@ -13,12 +13,14 @@ func GetLocation(cmd network.GetCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		ipAddress := c.Request.URL.Query().Get("network")
+		lang := c.Request.URL.Query().Get("lang")
+
 		if ipAddress == "" {
 			c.Status(http.StatusBadRequest)
 			return
 		}
 
-		sale, _ := cmd(c.Request.Context(), store.Options{IP: ipAddress, Lang: ""})
+		sale, _ := cmd(c.Request.Context(), store.Options{IP: ipAddress, Lang: lang})
 		//TODO
 		/*if err != nil {
 			switch err {
