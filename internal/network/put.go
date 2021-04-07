@@ -55,8 +55,8 @@ func readAll(file *zip.File) ([]byte, error) {
 }
 
 // Fill database model with unziped file
-func createObject(file *zip.File) []interface{} {
-	var translation []interface{}
+func createObject(file *zip.File) []model.Translation {
+	var translation []model.Translation
 	rawBytes, _ := readAll(file)
 	lines := strings.Split(string(rawBytes), "\n")
 	for _, line := range lines[1:] {

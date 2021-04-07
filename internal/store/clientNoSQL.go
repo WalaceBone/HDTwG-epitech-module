@@ -30,14 +30,14 @@ func (c *ClientNoSQL) Init() error {
 	return nil
 }
 
-func (c *ClientNoSQL) Get(ctx context.Context, opts Options) (model.Translation, error) {
+func (c *ClientNoSQL) Get(ctx context.Context, opts Options) ([]model.Translation, error) {
 
 	val, err := c.rdb.Do(ctx, "HGET", "album:1", "title").Result()
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(val)
-	return model.Translation{}, nil
+	return []model.Translation{}, nil
 }
 
 func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []model.Location) error {
@@ -45,7 +45,6 @@ func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []m
 	wg := sync.WaitGroup{}
 	wg.Add(500)
 	portion := len(ip) / 500
-
 	for i := 0; i < 500; i++ {
 		fmt.Println(i)
 		go func(i int, portion int, ip []model.Location) {

@@ -6,11 +6,11 @@ import (
 	"context"
 )
 
-type GetCmd func(ctx context.Context, options Stores.Options) (model.Translation, error)
+type GetCmd func(ctx context.Context, options Stores.Options) ([]model.Translation, error)
 
 func Get(stores ...Stores.Store) GetCmd {
-	return func(ctx context.Context, options Stores.Options) (model.Translation, error) {
-		var translation model.Translation
+	return func(ctx context.Context, options Stores.Options) ([]model.Translation, error) {
+		var translation []model.Translation
 		var err error
 		for _, store := range stores {
 			translation, err = store.Get(ctx, options)
@@ -20,13 +20,13 @@ func Get(stores ...Stores.Store) GetCmd {
 					logrus.Error(err)
 				}*/
 			}
-			if (translation != model.Translation{}) {
-				break
-			}
+			// if translation != []model.Translation{} {
+			// 	break
+			// }
 		}
-		if (translation == model.Translation{}) {
-			return model.Translation{}, err
-		}
+		// if translation == []model.Translation{} {
+		// 	return []model.Translation{}, err
+		// }
 		return translation, err
 	}
 }
