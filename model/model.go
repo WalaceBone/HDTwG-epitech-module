@@ -1,8 +1,8 @@
 package model
 
 type Location struct {
-	UUID    string `json:"uuid" db:"uuid" redis:"uuid"`
 	Address string `json:"network" db:"network" redis:"network"`
+	UUID    string `json:"uuid" db:"uuid" redis:"uuid"`
 }
 
 type Translation struct {
@@ -31,3 +31,4 @@ type TranslationEN struct {
 	Department string `json:"department" db:"department"`
 	City       string `json:"city" db:"city"`
 }
+

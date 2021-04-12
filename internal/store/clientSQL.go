@@ -3,6 +3,7 @@ package store
 import (
 	"HDTwG/model"
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	// Used for the postgres driver
@@ -96,6 +97,6 @@ func (c *Client) Get(ctx context.Context, opts Options) ([]model.Translation, er
 }
 
 func (c *Client) Put(ctx context.Context, translations Translations, locations []model.Location) error {
-	c.db.MustExec("copy location(uuid, address) FROM '/home/paul/HDTwG-epitech-module/ressources/IP-locations/IP-locations.csv' DELIMITER ',' CSV")
+	c.db.MustExec("copy location from '/ressources/IP-locations/IP-locations/IP-locations.csv' DELIMITER ',' CSV HEADER")
 	return nil
 }

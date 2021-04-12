@@ -11,6 +11,7 @@ services:
   db_container:
     volumes:
       - "my_db:/var/lib/postgres"
+      - "data:/ressources/IP-locations"
     container_name: "db_container"
     restart: always
     image: postgres:latest
@@ -25,14 +26,20 @@ services:
       POSTGRES_ROOT_PASSWORD: "password"
 
   redis:
-        image: redis:latest
-        ports:
-            - 6379:6379
-        volumes:
-            - ./config/redis.conf:/redis.conf
-        command: [ "redis-server", "/redis.conf" ]
-  
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - ./config/redis.conf:/redis.conf
+    command: [ "redis-server", "/redis.conf" ]
+
 
 volumes:
   my_db:
+  data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: ${PATH_TO_RESSOURCES}
 
