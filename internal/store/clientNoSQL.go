@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -24,7 +23,7 @@ func (c *ClientNoSQL) Init() error {
 		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
-		PoolSize: 16000,
+		PoolSize: 8001,
 	})
 
 	return nil
@@ -81,16 +80,14 @@ func (c *ClientNoSQL) Get(ctx context.Context, opts Options) ([]model.Translatio
 func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []model.Location) error {
 
 	var log *redis.Cmd
-	wg := sync.WaitGroup{}
-	wg.Add(16000)
-	nb_iplocations := len(ip) / 4000
-	nb_translationsfr := len(translations.TranslationFR) / 4000
-	nb_translationsen := len(translations.TranslationEN) / 4000
-	nb_translationses := len(translations.TranslationES) / 4000
 
-	for i := 0; i < 4000; i++ {
+	nb_iplocations := len(ip) / 2000
+	nb_translationsfr := len(translations.TranslationFR) / 2000
+	nb_translationsen := len(translations.TranslationEN) / 2000
+	nb_translationses := len(translations.TranslationES) / 2000
+
+	for i := 0; i < 2000; i++ {
 		go func(i int, nb_iplocations int, ip []model.Location) error {
-			defer wg.Done()
 
 			for j := i * nb_iplocations; j < (i+1)*nb_iplocations; j++ {
 				log = c.rdb.Do(ctx, "HSET", "location", ip[j].Address, ip[j].UUID)
@@ -99,7 +96,7 @@ func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []m
 			return nil
 		}(i, nb_iplocations, ip)
 		go func(i int, nb_translationsfr int, translations Translations) error {
-			defer wg.Done()
+
 			translationsFR := translations.TranslationFR
 
 			for j := i * nb_translationsfr; j < (i+1)*nb_translationsfr; j++ {
@@ -110,7 +107,7 @@ func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []m
 			return nil
 		}(i, nb_translationsfr, translations)
 		go func(i int, nb_translationses int, translations Translations) error {
-			defer wg.Done()
+
 			translationsES := translations.TranslationES
 
 			for j := i * nb_translationses; j < (i+1)*nb_translationses; j++ {
@@ -121,7 +118,7 @@ func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []m
 			return nil
 		}(i, nb_translationses, translations)
 		go func(i int, nb_translationsen int, translations Translations) error {
-			defer wg.Done()
+
 			translationsEN := translations.TranslationEN
 
 			for j := i * nb_translationsen; j < (i+1)*nb_translationsfr; j++ {
@@ -133,6 +130,6 @@ func (c *ClientNoSQL) Put(ctx context.Context, translations Translations, ip []m
 		}(i, nb_translationsen, translations)
 	}
 
-	wg.Wait()
+	ctx = context.Background()
 	return nil
 }
