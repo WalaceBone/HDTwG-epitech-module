@@ -31,3 +31,4 @@ type TranslationEN struct {
 	Department string `json:"department" db:"department"`
 	City       string `json:"city" db:"city"`
 }
+

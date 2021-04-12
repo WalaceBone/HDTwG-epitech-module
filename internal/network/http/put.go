@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetSale ...
 func PutLocation(cmd network.PutCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := cmd(c.Request.Context())

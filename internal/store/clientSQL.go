@@ -4,6 +4,7 @@ import (
 	"HDTwG/model"
 	"context"
 	"fmt"
+	"log"
 	"sync"
 
 	"gorm.io/driver/postgres"
@@ -68,7 +69,7 @@ func (c *Client) Put(ctx context.Context, translations Translations, locations [
 			for j := i * portion; j < (i+1)*portion; j++ {
 				err := c.db.Create(&locations[j]).Error
 				if err != nil {
-					fmt.Println(err)
+					log.Print(err)
 				}
 			}
 		}(i, portion, locations)
