@@ -14,12 +14,12 @@ func initRoute(router *gin.Engine, client *store.Client, redisClient *store.Clie
 	router.GET("/location", http.GetLocation(network.Get(
 		cacheClient,
 		client,
-		redisClient,
+		//redisClient,
 	)))
 	router.PUT("/locations", http.PutLocation(network.Put(
 		cacheClient,
 		client,
-		redisClient,
+		//redisClient,
 	)))
 }
 
@@ -27,13 +27,17 @@ var ctx = context.Background()
 
 func main() {
 
-	clt := store.NewClient()
+	clt, err := store.NewSQLClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	rclt := store.NewNSQLClient()
 	cch := store.NewCacheClient()
 
-	if err := clt.Init(); err != nil {
+	/*if err := clt.Init(); err != nil {
 		log.Fatal("error while init postgres client")
-	}
+	}*/
 	if err := rclt.Init(); err != nil {
 		log.Fatal("error while init redis client")
 	}
@@ -44,7 +48,7 @@ func main() {
 
 	initRoute(router, clt, rclt, cch)
 
-	err := router.Run(":8081")
+	err = router.Run(":8081")
 	if err != nil {
 		log.Fatal("error while running the router")
 	}

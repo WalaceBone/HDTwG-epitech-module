@@ -4,115 +4,99 @@ import (
 	"HDTwG/model"
 	"context"
 	"fmt"
-	"log"
-	"sync"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/jmoiron/sqlx"
+	// Used for the postgres driver
+	_ "github.com/lib/pq"
 )
 
 type Client struct {
-	db *gorm.DB
+	db *sqlx.DB
 }
 
-func NewClient() *Client {
-	return &Client{}
-}
+func NewSQLClient() (*Client, error) {
 
-func (c *Client) Init() error {
-
-	dsn := "host=localhost user=user password=password dbname=db port=5432 sslmode=disable TimeZone=Europe/Paris"
-	c.db, _ = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
-	err := c.db.AutoMigrate(&model.Translation{}, &model.TranslationES{}, &model.TranslationEN{}, &model.Location{})
+	db, err := sqlx.Connect("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		"localhost", 5432, "user", "password", "db"))
 	if err != nil {
-		return err
+		return &Client{}, err
 	}
-	return nil
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS translation (
+		uuid VARCHAR(255) PRIMARY KEY,
+		continent VARCHAR(255),
+		country VARCHAR(255),
+		region VARCHAR(255),
+		department VARCHAR(255),
+		city VARCHAR(255)
+	)`)
+	if err != nil {
+		return &Client{}, err
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS translation_en (
+		uuid VARCHAR(255) PRIMARY KEY,
+		continent VARCHAR(255),
+		country VARCHAR(255),
+		region VARCHAR(255),
+		department VARCHAR(255),
+		city VARCHAR(255)
+	)`)
+	if err != nil {
+		return &Client{}, err
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS translation_es (
+		uuid VARCHAR(255) PRIMARY KEY,
+		continent VARCHAR(255),
+		country VARCHAR(255),
+		region VARCHAR(255),
+		department VARCHAR(255),
+		city VARCHAR(255)
+	)`)
+	if err != nil {
+		return &Client{}, err
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS location (
+		uuid VARCHAR(255) PRIMARY KEY,
+		address VARCHAR(255)
+	)`)
+	if err != nil {
+		return &Client{}, err
+	}
+
+	return &Client{db}, nil
 }
 
 func (c *Client) Get(ctx context.Context, opts Options) ([]model.Translation, error) {
-	var translations []model.Translation
-	var translation model.Translation
-	var location model.Location
+	// var translations []model.Translation
+	// var translation model.Translation
+	// var location model.Location
 
-	if err := c.db.Model(&model.Location{}).Where(model.Location{Address: opts.IP}).Find(&location).Error; err != nil {
-		return []model.Translation{}, err
-	}
-	if opts.Lang == "English" || opts.Lang == "" {
-		if err := c.db.Model(&model.TranslationEN{}).Where(model.TranslationEN{UUID: location.UUID}).Find(&translation).Error; err != nil {
-			return []model.Translation{}, err
-		}
-		translations = append(translations, translation)
-	} else if opts.Lang == "French" || opts.Lang == "" {
-		if err := c.db.Model(&model.Translation{}).Where(model.Translation{UUID: location.UUID}).Find(&translation).Error; err != nil {
-			return []model.Translation{}, err
-		}
-		translations = append(translations, translation)
-	} else if opts.Lang == "Spanish" || opts.Lang == "" {
-		if err := c.db.Model(&model.TranslationES{}).Where(model.TranslationES{UUID: location.UUID}).Find(&translation).Error; err != nil {
-			return []model.Translation{}, err
-		}
-		translations = append(translations, translation)
-	}
-	return translations, nil
+	// if err := c.db.Model(&model.Location{}).Where(model.Location{Address: opts.IP}).Find(&location).Error; err != nil {
+	// 	return []model.Translation{}, err
+	// }
+	// if opts.Lang == "English" || opts.Lang == "" {
+	// 	if err := c.db.Model(&model.TranslationEN{}).Where(model.TranslationEN{UUID: location.UUID}).Find(&translation).Error; err != nil {
+	// 		return []model.Translation{}, err
+	// 	}
+	// 	translations = append(translations, translation)
+	// } else if opts.Lang == "French" || opts.Lang == "" {
+	// 	if err := c.db.Model(&model.Translation{}).Where(model.Translation{UUID: location.UUID}).Find(&translation).Error; err != nil {
+	// 		return []model.Translation{}, err
+	// 	}
+	// 	translations = append(translations, translation)
+	// } else if opts.Lang == "Spanish" || opts.Lang == "" {
+	// 	if err := c.db.Model(&model.TranslationES{}).Where(model.TranslationES{UUID: location.UUID}).Find(&translation).Error; err != nil {
+	// 		return []model.Translation{}, err
+	// 	}
+	// 	translations = append(translations, translation)
+	// }
+	return []model.Translation{}, nil
 }
 
 func (c *Client) Put(ctx context.Context, translations Translations, locations []model.Location) error {
-	wg := sync.WaitGroup{}
-	wg.Add(50)
-	portion := len(locations) / 50
-
-	for i := 0; i < 50; i++ {
-		go func(i int, portion int, locations []model.Location) {
-			defer wg.Done()
-			for j := i * portion; j < (i+1)*portion; j++ {
-				err := c.db.Create(&locations[j]).Error
-				if err != nil {
-					log.Print(err)
-				}
-			}
-		}(i, portion, locations)
-	}
-
-	for i := 0; i < 50; i++ {
-		go func(i int, translations Translations, portion int) {
-			defer wg.Done()
-			for j := i * portion; j < (i+1)*portion; j++ {
-				if err := c.db.Create(&model.Translation{
-					UUID:       translations.TranslationFR[j].UUID,
-					Continent:  translations.TranslationFR[j].Continent,
-					Country:    translations.TranslationFR[j].Country,
-					Region:     translations.TranslationFR[j].Region,
-					Department: translations.TranslationFR[j].Department,
-					City:       translations.TranslationFR[j].City,
-				}).Error; err != nil {
-					fmt.Println(err)
-				}
-				if err := c.db.Create(&model.TranslationEN{
-					UUID:       translations.TranslationEN[j].UUID,
-					Continent:  translations.TranslationEN[j].Continent,
-					Country:    translations.TranslationEN[j].Country,
-					Region:     translations.TranslationEN[j].Region,
-					Department: translations.TranslationEN[j].Department,
-					City:       translations.TranslationEN[j].City,
-				}).Error; err != nil {
-					fmt.Println(err)
-				}
-				if err := c.db.Create(&model.TranslationES{
-					UUID:       translations.TranslationES[j].UUID,
-					Continent:  translations.TranslationES[j].Continent,
-					Country:    translations.TranslationES[j].Country,
-					Region:     translations.TranslationES[j].Region,
-					Department: translations.TranslationES[j].Department,
-					City:       translations.TranslationES[j].City,
-				}).Error; err != nil {
-					fmt.Println(err)
-				}
-			}
-		}(i, translations, len(translations.TranslationFR)/50)
-	}
-
-	wg.Wait()
+	c.db.MustExec("copy location from '/ressources/IP-locations/IP-locations/IP-locations.csv' DELIMITER ',' CSV HEADER")
 	return nil
 }
