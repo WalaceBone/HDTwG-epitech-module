@@ -18,12 +18,6 @@ type Cache struct {
 
 const TimeToLive = 40320
 
-type Translation struct {
-	TranslationFR model.Translation
-	TranslationEN model.Translation
-	TranslationES model.Translation
-}
-
 type CacheClient struct {
 	cache *gocache.Cache
 }
@@ -37,8 +31,15 @@ func (c *CacheClient) Init() error {
 	return nil
 }
 
-func (c *CacheClient) Insert(ctx context.Context, ip model.Location, translation model.Translation) error {
-	c.cache.Set(ip.Address, &translation, TimeToLive)
+
+//Tres boulgour ce qui se passe ici mais on en parle pas
+func (c *CacheClient) Insert(ctx context.Context, ip model.Location, translation []model.Translation) error {
+
+	var key string
+
+	key = ip.Address + ip.UUID
+
+	c.cache.Set(key, &translation, TimeToLive)
 	return nil
 }
 
@@ -53,6 +54,7 @@ func (c *CacheClient) Get(ctx context.Context, opts Options) ([]model.Translatio
 }
 
 func (c *CacheClient) Put(ctx context.Context, translations Translations, ip []model.Location) error {
+	c.Insert(ctx, ip[0], translations.TranslationFR)
 	return nil
 }
 
