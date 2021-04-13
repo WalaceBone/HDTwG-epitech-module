@@ -18,13 +18,7 @@ func Put(stores ...Stores.Store) PutCmd {
 		var locations []model.Location
 		translations, locations, err := unzip("ressources/IP-locations.zip")
 		for _, store := range stores {
-			err = store.Put(ctx, translations, locations)
-			if err != nil {
-				//TODO error models
-				/*if err != model.ErrNotFound {
-					logrus.Error(err)
-				}*/
-			}
+			store.Put(ctx, translations, locations)
 		}
 		return err
 	}

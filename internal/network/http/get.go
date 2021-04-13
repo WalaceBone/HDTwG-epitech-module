@@ -11,7 +11,6 @@ import (
 // GetSale ...
 func GetLocation(cmd network.GetCmd) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		ipAddress := c.Request.URL.Query().Get("ip")
 		lang := c.Request.URL.Query().Get("lang")
 
