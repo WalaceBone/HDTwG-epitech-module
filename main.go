@@ -35,9 +35,6 @@ func main() {
 	rclt := store.NewNSQLClient()
 	cch := store.NewCacheClient()
 
-	/*if err := clt.Init(); err != nil {
-		log.Fatal("error while init postgres client")
-	}*/
 	if err := rclt.Init(); err != nil {
 		log.Fatal("error while init redis client")
 	}

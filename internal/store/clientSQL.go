@@ -59,8 +59,8 @@ func NewSQLClient() (*Client, error) {
 	}
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS location (
-		uuid VARCHAR(255) PRIMARY KEY,
-		address VARCHAR(255)
+		address VARCHAR(255),
+		uuid VARCHAR(255)
 	)`)
 	if err != nil {
 		return &Client{}, err
@@ -70,13 +70,14 @@ func NewSQLClient() (*Client, error) {
 }
 
 func (c *Client) Get(ctx context.Context, opts Options) ([]model.Translation, error) {
-	// var translations []model.Translation
+	var translations []model.Translation
 	// var translation model.Translation
-	// var location model.Location
+	var location model.Location
 
-	// if err := c.db.Model(&model.Location{}).Where(model.Location{Address: opts.IP}).Find(&location).Error; err != nil {
-	// 	return []model.Translation{}, err
-	// }
+	err := c.db.Select(&location, "SELECT * FROM location WHERE address=$1", opts.IP)
+	if err != nil {
+		return []model.Translation{}, err
+	}
 	// if opts.Lang == "English" || opts.Lang == "" {
 	// 	if err := c.db.Model(&model.TranslationEN{}).Where(model.TranslationEN{UUID: location.UUID}).Find(&translation).Error; err != nil {
 	// 		return []model.Translation{}, err
@@ -93,10 +94,25 @@ func (c *Client) Get(ctx context.Context, opts Options) ([]model.Translation, er
 	// 	}
 	// 	translations = append(translations, translation)
 	// }
-	return []model.Translation{}, nil
+	return translations, nil
 }
 
 func (c *Client) Put(ctx context.Context, translations Translations, locations []model.Location) error {
-	c.db.MustExec("copy location from '/ressources/IP-locations/IP-locations/IP-locations.csv' DELIMITER ',' CSV HEADER")
+	go func() {
+		c.db.MustExec("DELETE FROM location")
+		c.db.MustExec("copy location from '/ressources/IP-locations/IP-locations/IP-locations.csv' DELIMITER ',' CSV HEADER")
+	}()
+	go func() {
+		c.db.MustExec("DELETE FROM translation")
+		c.db.MustExec("copy translation from '/ressources/IP-locations/IP-locations/Locations-FR.csv' DELIMITER ';' CSV HEADER")
+	}()
+	go func() {
+		c.db.MustExec("DELETE FROM translation_es")
+		c.db.MustExec("copy translation_es from '/ressources/IP-locations/IP-locations/Locations-ES.csv' DELIMITER ';' CSV HEADER")
+	}()
+	go func() {
+		c.db.MustExec("DELETE FROM translation_en")
+		c.db.MustExec("copy translation_en from '/ressources/IP-locations/IP-locations/Locations-EN.csv' DELIMITER ';' CSV HEADER")
+	}()
 	return nil
 }
