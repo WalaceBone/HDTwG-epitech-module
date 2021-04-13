@@ -75,18 +75,19 @@ func (c *Client) Get(ctx context.Context, opts Options) ([]model.Translation, er
 	var location model.Location
 
 	err := c.db.Get(&location, "SELECT location.* FROM location WHERE address=$1", opts.IP)
-	fmt.Println(location)
 	if err != nil {
 		return []model.Translation{}, err
 	}
 	if opts.Lang == "English" || opts.Lang == "" {
-		c.db.Get(&translation, "SELECT translation.* FROM translation_en WHERE uuid=$1", location.UUID)
+		c.db.Get(&translation, "SELECT translation_en.* FROM translation_en WHERE uuid=$1", location.UUID)
 		translations = append(translations, translation)
-	} else if opts.Lang == "French" || opts.Lang == "" {
+	}
+	if opts.Lang == "French" || opts.Lang == "" {
 		c.db.Get(&translation, "SELECT translation.* FROM translation WHERE uuid=$1", location.UUID)
 		translations = append(translations, translation)
-	} else if opts.Lang == "Spanish" || opts.Lang == "" {
-		c.db.Get(&translation, "SELECT translation.* FROM translation_es WHERE uuid=$1", location.UUID)
+	}
+	if opts.Lang == "Spanish" || opts.Lang == "" {
+		c.db.Get(&translation, "SELECT translation_es.* FROM translation_es WHERE uuid=$1", location.UUID)
 		translations = append(translations, translation)
 	}
 	fmt.Println(translations)
