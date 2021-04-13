@@ -27,7 +27,7 @@ func Get(stores ...Stores.Store) GetCmd {
 
 				loc = append(loc, model.Location{
 					Address: options.IP,
-					UUID:    options.IP,
+					UUID:    options.Lang,
 				})
 				stores[0].Put(ctx, Stores.Translations{
 					TranslationFR: translation,
