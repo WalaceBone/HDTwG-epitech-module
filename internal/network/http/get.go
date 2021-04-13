@@ -20,7 +20,6 @@ func GetLocation(cmd network.GetCmd) gin.HandlerFunc {
 		}
 
 		location, err := cmd(c.Request.Context(), store.Options{IP: ipAddress, Lang: lang})
-		//TODO
 		if err != nil {
 			switch err {
 

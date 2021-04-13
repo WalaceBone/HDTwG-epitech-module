@@ -1,7 +1,7 @@
 package model
 
 type Location struct {
-	Address string `json:"network" db:"network" redis:"network"`
+	Address string `json:"address" db:"address" redis:"network"`
 	UUID    string `json:"uuid" db:"uuid" redis:"uuid"`
 }
 

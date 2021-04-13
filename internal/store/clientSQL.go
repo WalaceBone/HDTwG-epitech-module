@@ -71,48 +71,44 @@ func NewSQLClient() (*Client, error) {
 
 func (c *Client) Get(ctx context.Context, opts Options) ([]model.Translation, error) {
 	var translations []model.Translation
-	// var translation model.Translation
+	var translation model.Translation
 	var location model.Location
 
-	err := c.db.Select(&location, "SELECT * FROM location WHERE address=$1", opts.IP)
+	err := c.db.Get(&location, "SELECT location.* FROM location WHERE address=$1", opts.IP)
+	fmt.Println(location)
 	if err != nil {
 		return []model.Translation{}, err
 	}
-	// if opts.Lang == "English" || opts.Lang == "" {
-	// 	if err := c.db.Model(&model.TranslationEN{}).Where(model.TranslationEN{UUID: location.UUID}).Find(&translation).Error; err != nil {
-	// 		return []model.Translation{}, err
-	// 	}
-	// 	translations = append(translations, translation)
-	// } else if opts.Lang == "French" || opts.Lang == "" {
-	// 	if err := c.db.Model(&model.Translation{}).Where(model.Translation{UUID: location.UUID}).Find(&translation).Error; err != nil {
-	// 		return []model.Translation{}, err
-	// 	}
-	// 	translations = append(translations, translation)
-	// } else if opts.Lang == "Spanish" || opts.Lang == "" {
-	// 	if err := c.db.Model(&model.TranslationES{}).Where(model.TranslationES{UUID: location.UUID}).Find(&translation).Error; err != nil {
-	// 		return []model.Translation{}, err
-	// 	}
-	// 	translations = append(translations, translation)
-	// }
+	if opts.Lang == "English" || opts.Lang == "" {
+		c.db.Get(&translation, "SELECT translation.* FROM translation_en WHERE uuid=$1", location.UUID)
+		translations = append(translations, translation)
+	} else if opts.Lang == "French" || opts.Lang == "" {
+		c.db.Get(&translation, "SELECT translation.* FROM translation WHERE uuid=$1", location.UUID)
+		translations = append(translations, translation)
+	} else if opts.Lang == "Spanish" || opts.Lang == "" {
+		c.db.Get(&translation, "SELECT translation.* FROM translation_es WHERE uuid=$1", location.UUID)
+		translations = append(translations, translation)
+	}
+	fmt.Println(translations)
 	return translations, nil
 }
 
 func (c *Client) Put(ctx context.Context, translations Translations, locations []model.Location) error {
 	go func() {
 		c.db.MustExec("DELETE FROM location")
-		c.db.MustExec("copy location from '/ressources/IP-locations/IP-locations/IP-locations.csv' DELIMITER ',' CSV HEADER")
+		c.db.MustExec("copy location from '/ressources/IP-locations/IP-locations.csv' DELIMITER ',' CSV HEADER")
 	}()
 	go func() {
 		c.db.MustExec("DELETE FROM translation")
-		c.db.MustExec("copy translation from '/ressources/IP-locations/IP-locations/Locations-FR.csv' DELIMITER ';' CSV HEADER")
+		c.db.MustExec("copy translation from '/ressources/IP-locations/Locations-FR.csv' DELIMITER ';' CSV HEADER")
 	}()
 	go func() {
 		c.db.MustExec("DELETE FROM translation_es")
-		c.db.MustExec("copy translation_es from '/ressources/IP-locations/IP-locations/Locations-ES.csv' DELIMITER ';' CSV HEADER")
+		c.db.MustExec("copy translation_es from '/ressources/IP-locations/Locations-ES.csv' DELIMITER ';' CSV HEADER")
 	}()
 	go func() {
 		c.db.MustExec("DELETE FROM translation_en")
-		c.db.MustExec("copy translation_en from '/ressources/IP-locations/IP-locations/Locations-EN.csv' DELIMITER ';' CSV HEADER")
+		c.db.MustExec("copy translation_en from '/ressources/IP-locations/Locations-EN.csv' DELIMITER ';' CSV HEADER")
 	}()
 	return nil
 }

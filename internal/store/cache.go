@@ -3,7 +3,6 @@ package store
 import (
 	"HDTwG/model"
 	"context"
-	"log"
 	"time"
 
 	gocache "github.com/patrickmn/go-cache"
@@ -44,8 +43,6 @@ func (c *CacheClient) Insert(ctx context.Context, ip model.Location, translation
 }
 
 func (c *CacheClient) Get(ctx context.Context, opts Options) ([]model.Translation, error) {
-
-	log.Print(opts)
 	result, found := c.cache.Get(opts.IP)
 	if !found {
 		return nil, nil
